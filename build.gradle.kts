@@ -23,6 +23,9 @@ dependencies {
     // JDA: https://mvnrepository.com/artifact/net.dv8tion/JDA
     implementation("net.dv8tion:JDA:5.2.1") // JDA 5.2.1 (10 November 2024).
 
+    // JSON: https://mvnrepository.com/artifact/org.json/json.
+    implementation("org.json:json:20240303") // JSON 20240303 (03 March 2024).
+
     // SLF4J: https://mvnrepository.com/artifact/org.slf4j/slf4j-api
     implementation("org.slf4j:slf4j-api:2.0.16") // SLF4J 2.0.16 (10 August 2024).
 
