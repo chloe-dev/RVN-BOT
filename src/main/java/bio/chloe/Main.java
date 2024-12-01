@@ -1,6 +1,7 @@
 package bio.chloe;
 
 import bio.chloe.configuration.Configuration;
+import bio.chloe.handlers.SlashCommandHandler;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.exceptions.InvalidTokenException;
@@ -30,6 +31,8 @@ public class Main {
             JDA jdaObject = JDABuilder.createDefault(
                     configurationInstance.optString("botToken", null)
             ).build();
+
+            jdaObject.addEventListener(new SlashCommandHandler(jdaObject));
 
             awaitShutdown(jdaObject);
 
