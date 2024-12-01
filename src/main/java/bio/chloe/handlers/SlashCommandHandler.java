@@ -1,5 +1,6 @@
 package bio.chloe.handlers;
 
+import bio.chloe.commands.Ping;
 import bio.chloe.interfaces.ISlashCommandInteraction;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
@@ -29,7 +30,8 @@ public class SlashCommandHandler extends ListenerAdapter {
     }
 
     private void initSlashCommandMap() {
-
+        // Utility.
+        registerSlashCommand(new Ping());
     }
 
     @Override
