@@ -1,7 +1,7 @@
 package bio.chloe.handlers;
 
-import bio.chloe.commands.Ping;
-import bio.chloe.commands.Uptime;
+import bio.chloe.commands.utility.Ping;
+import bio.chloe.commands.utility.Uptime;
 import bio.chloe.interfaces.ISlashCommandInteraction;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;

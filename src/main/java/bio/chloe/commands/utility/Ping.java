@@ -1,4 +1,4 @@
-package bio.chloe.commands;
+package bio.chloe.commands.utility;
 
 import bio.chloe.interfaces.ISlashCommandInteraction;
 import bio.chloe.utility.Embeds;
