@@ -2,6 +2,7 @@ package bio.chloe;
 
 import bio.chloe.configuration.Configuration;
 import bio.chloe.handlers.SlashCommandHandler;
+import bio.chloe.managers.DatabaseManager;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.exceptions.InvalidTokenException;
@@ -9,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.time.Duration;
 import java.util.Scanner;
 
@@ -17,15 +17,19 @@ public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) {
-        try {
-            Configuration.initializeConfiguration(new File("Configuration.json"));
-        } catch (IOException configurationInitializationException) {
-            LOGGER.error("IOException occurred whilst initializing the configuration.");
+        Configuration configurationInstance = Configuration.initializeConfiguration(new File("Configuration.json"));
+
+        if (configurationInstance == null) {
+            LOGGER.error("Configuration instance was null, see previous log entries for details.");
 
             System.exit(-1); // TODO: Implement well-documented exit codes.
         }
 
-        Configuration configurationInstance = Configuration.getInstance();
+        if (configurationInstance.optString("dbUrl", "").isEmpty()) {
+            LOGGER.error("Database URL is not provided within Configuration.json.");
+
+            System.exit(-1); // TODO: Implement well-documented exit codes.
+        }
 
         try {
             JDA jdaObject = JDABuilder.createDefault(

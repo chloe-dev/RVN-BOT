@@ -9,51 +9,53 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Objects;
-
-// TODO: Documentation (though, this one's fairly readable).
+import java.util.function.Supplier;
 
 public class Configuration {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
+    // Lazily load the SLF4J logger to prevent unnecessary memory allocation for an unused logger.
+    private static final Supplier<Logger> LOGGER = () -> LoggerFactory.getLogger(Configuration.class);
 
-    private static volatile Configuration instance;
+    private static volatile Configuration configurationInstance;
     private final JSONObject configurationData;
 
-    private Configuration(File jsonConfigurationFile) throws IOException {
-        Objects.requireNonNull(jsonConfigurationFile, "JSON configuration file cannot be null.");
-
-        if (!jsonConfigurationFile.exists()) {
-            LOGGER.error("JSON configuration file does not exist at {}.", jsonConfigurationFile.getAbsolutePath());
-
-            throw new IOException("JSON Configuration file does not exist at " + jsonConfigurationFile.getAbsolutePath() + ".");
-        }
-
-        try {
-            String jsonContent = new String(Files.readAllBytes(jsonConfigurationFile.toPath()));
-
-            this.configurationData = new JSONObject(jsonContent);
-
-            LOGGER.info("Successfully loaded configuration from {}.", jsonConfigurationFile.getAbsolutePath());
-        } catch (Exception generalException) { // TODO: Catch and handle individual exceptions.
-            LOGGER.error("Failed to load the configuration file: {}.", generalException.getMessage());
-
-            throw new IOException("Failed to load the configuration file: " + generalException.getMessage() + ".", generalException);
-        }
+    private Configuration(JSONObject configurationData) {
+        this.configurationData = configurationData;
     }
 
-    /* TODO: Combine initializeConfiguration and getInstance in a manner that's less annoying.
-     * Ideally, once the configuration is initialized, there should be no need to call the
-     * initializeConfiguration function (in fact, it would do nothing), however, the fact
-     * that it's still call-able is an issue in itself since it's a one time use function.
-     */
+    public static Configuration initializeConfiguration(File jsonConfigurationFile) {
+        Objects.requireNonNull(jsonConfigurationFile, "JSON configuration file cannot be null.");
 
-    public static void initializeConfiguration(File jsonConfigurationFile) throws IOException {
-        if (instance == null) {
-            instance = new Configuration(jsonConfigurationFile);
+        if (configurationInstance == null) {
+            synchronized (Configuration.class) {
+                if (configurationInstance == null) {
+                    if (!jsonConfigurationFile.exists()) {
+                        LOGGER.get().error("JSON configuration file does not exist at {}.", jsonConfigurationFile.getAbsolutePath()); return configurationInstance;
+                    }
+
+                    if (!jsonConfigurationFile.canRead()) {
+                        LOGGER.get().error("JSON configuration file at {} cannot be read.", jsonConfigurationFile.getAbsolutePath()); return configurationInstance;
+                    }
+
+                    try {
+                        // Create a new String object containing the JSON data, constructing a JSONObject and passing that to the Configuration constructor.
+                        configurationInstance = new Configuration(new JSONObject(new String(Files.readAllBytes(jsonConfigurationFile.toPath()))));
+                    } catch (IOException ioException) {
+                        LOGGER.get().error("IOException occurred whilst reading from {}.", jsonConfigurationFile.getAbsolutePath());
+                    }
+                }
+            }
         }
+
+        return configurationInstance;
     }
 
     public static Configuration getInstance() {
-        return instance;
+        if (configurationInstance == null) {
+            LOGGER.get().error("Configuration.getInstance() called before instance initialization.");
+            throw new IllegalStateException("Configuration instance is not initialized.");
+        }
+
+        return configurationInstance;
     }
 
     public String optString(String key, String defaultValue) {
