@@ -1,5 +1,6 @@
 package bio.chloe.handlers;
 
+import bio.chloe.commands.starcitizen.Beacon;
 import bio.chloe.commands.utility.Ping;
 import bio.chloe.commands.utility.Uptime;
 import bio.chloe.interfaces.ISlashCommandInteraction;
@@ -34,6 +35,9 @@ public class SlashCommandHandler extends ListenerAdapter {
         // Utility.
         registerSlashCommand(new Ping());
         registerSlashCommand(new Uptime());
+
+        // Star Citizen.
+        registerSlashCommand(new Beacon());
     }
 
     @Override
