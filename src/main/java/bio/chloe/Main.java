@@ -31,6 +31,16 @@ public class Main {
             System.exit(-1); // TODO: Implement well-documented exit codes.
         }
 
+        DatabaseManager.initializeDatabaseManager(configurationInstance.optString("dbUrl", ""));
+
+        try {
+            DatabaseManager.getInstance().executeQuery("SELECT * FROM sqlite_master", preparedStatement -> {}, resultSet -> {});
+        } catch (Exception e) {
+            LOGGER.error("Database initialization test failed, exiting.");
+
+            System.exit(-1); // TODO: Implement well-documented exit codes.
+        }
+
         try {
             JDA jdaObject = JDABuilder.createDefault(
                     configurationInstance.optString("botToken", null)
@@ -65,6 +75,10 @@ public class Main {
     }
 
     private static void shutdown(JDA jdaObject) {
+        LOGGER.info("Initializing SQLite graceful shutdown procedures.");
+
+        DatabaseManager.getInstance().shutdownDatabase();
+
         LOGGER.info("Initializing JDA graceful shutdown procedures.");
 
         jdaObject.shutdown();
