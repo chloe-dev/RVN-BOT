@@ -90,6 +90,10 @@ public class GuildConfigurationCache {
         }
     }
 
+    public void removeGuildConfiguration(long guildId) {
+        guildConfigurationMap.remove(guildId);
+    }
+
     private void initializeScheduledExecutorService() {
         final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 

@@ -1,68 +1,191 @@
 package bio.chloe.caches.objects;
 
+import java.util.Collections;
 import java.util.List;
 
 public class GuildConfiguration {
-    private final long guildId;
+    /////////////////////
+    // — INFORMATION — //
+    /////////////////////
 
-    // Events.
-    private boolean logGuildMemberJoinEvents;
-    private boolean logGuildMemberRemoveEvents;
-    private boolean logMessageEvents;
-    private boolean logAutoModEvents;
+    private final long GUILD_ID;
 
-    private List<Long> beaconChannelIdList;
+    ////////////////
+    // — EVENTS — //
+    ////////////////
 
-    private long logChannelId;
+    private boolean logGuildChannelEvents; // ChannelCreateEvent, ChannelDeleteEvent
+    private boolean logGuildExpressionEvents; // EmojiAddedEvent, EmojiRemovedEvent, GuildStickerAddedEvent, GuildStickerRemovedEvent
+    private boolean logGuildMemberEvents; // GuildMemberJoinEvent, GuildMemberRemoveEvent, GuildMemberRoleAddEvent, GuildMemberRoleRemoveEvent, GuildMemberUpdateNicknameEvent
+    private boolean logGuildMessageEvents; // MessageDeleteEvent, MessageUpdateEvent, MessageBulkDeleteEvent
+    private boolean logGuildModerationEvents; // GuildBanEvent, GuildUnbanEvent, GuildMemberRemoveEvent, GuildVoiceGuildDeafenEvent, GuildVoiceGuildMuteEvent, GuildMemberUpdateTimeOutEvent
+    private boolean logGuildRoleEvents; // RoleCreateEvent, RoleDeleteEvent
 
-    private long lastAccessed;
+    //////////////////
+    // — CHANNELS — //
+    //////////////////
+
+    private long logChannelId; // Channel in which all logXEvents are logged within.
+
+    private List<Long> beaconChannelIds; // Channels in which beacons may be posted.
+
+    private List<Long> voipCategoryIds; // Categories in which VOIP channels may be created.
+
+    ///////////////////////
+    // — CACHE PURGING — //
+    ///////////////////////
+
+    private long lastAccessed; // Last time this GuildConfiguration was accessed.
+
+    /////////////////////
+    // — CONSTRUCTOR — //
+    /////////////////////
 
     public GuildConfiguration(long guildId) {
-        this.guildId = guildId;
+        /////////////////////
+        // — INFORMATION — //
+        /////////////////////
 
-        // Events.
-        logGuildMemberJoinEvents = false;
-        logGuildMemberRemoveEvents = false;
+        this.GUILD_ID = guildId;
 
-        // TODO: holy fuck this'll take a while 💀
+        ////////////////
+        // — EVENTS — //
+        ////////////////
 
+        this.logGuildChannelEvents = false;
+        this.logGuildExpressionEvents = false;
+        this.logGuildMemberEvents = false;
+        this.logGuildMessageEvents = false;
+        this.logGuildModerationEvents = false;
+        this.logGuildRoleEvents = false;
+
+        //////////////////
+        // — CHANNELS — //
+        //////////////////
+
+        this.logChannelId = 0L;
+
+        this.beaconChannelIds = Collections.emptyList();
+
+        this.voipCategoryIds = Collections.emptyList();
+
+        ///////////////////////
+        // — CACHE PURGING — //
+        ///////////////////////
+
+        this.lastAccessed = System.currentTimeMillis();
     }
 
+    /////////////////////
+    // — INFORMATION — //
+    /////////////////////
+
+    // Accessor (GUILD_ID).
     public long getGuildId() {
-        return guildId;
+        return GUILD_ID;
     }
 
-    ////////////
-    // EVENTS //
-    ////////////
+    ////////////////
+    // — EVENTS — //
+    ////////////////
 
-    public boolean getLogGuildMemberJoinEvents() {
-        return logGuildMemberJoinEvents;
+    // Accessor (logGuildChannelEvents).
+    public boolean getLogGuildChannelEvents() {
+        return logGuildChannelEvents;
     }
 
-    public boolean getLogGuildMemberRemoveEvents() {
-        return logGuildMemberRemoveEvents;
+    // Mutator (logGuildChannelEvents).
+    public void setLogGuildChannelEvents(boolean logGuildChannelEvents) {
+        this.logGuildChannelEvents = logGuildChannelEvents;
     }
 
-    public boolean getLogMessageEvents() {
-        return logMessageEvents;
+    // Accessor (logGuildExpressionEvents).
+    public boolean getLogGuildExpressionEvents() {
+        return logGuildExpressionEvents;
     }
 
-    /////////////////
-    // CHANNEL IDS //
-    /////////////////
-
-    public List<Long> getBeaconChannelIdList() {
-        return beaconChannelIdList;
+    // Mutator (logGuildExpressionEvents).
+    public void setLogGuildExpressionEvents(boolean logGuildExpressionEvents) {
+        this.logGuildExpressionEvents = logGuildExpressionEvents;
     }
 
+    // Accessor (logGuildMemberEvents).
+    public boolean getLogGuildMemberEvents() {
+        return logGuildMemberEvents;
+    }
+
+    // Mutator (logGuildMemberEvents).
+    public void setLogGuildMemberEvents(boolean logGuildMemberEvents) {
+        this.logGuildMemberEvents = logGuildMemberEvents;
+    }
+
+    // Accessor (logGuildMessageEvents).
+    public boolean getLogGuildMessageEvents() {
+        return logGuildMessageEvents;
+    }
+
+    // Mutator (logGuildChannelEvents).
+    public void setLogGuildMessageEvents(boolean logGuildMessageEvents) {
+        this.logGuildMessageEvents = logGuildMessageEvents;
+    }
+
+    // Accessor (logGuildModerationEvents).
+    public boolean getLogGuildModerationEvents() {
+        return logGuildModerationEvents;
+    }
+
+    // Mutator (logGuildModerationEvents).
+    public void setLogGuildModerationEvents(boolean logGuildModerationEvents) {
+        this.logGuildModerationEvents = logGuildModerationEvents;
+    }
+
+    // Accessor (logGuildRoleEvents).
+    public boolean getLogGuildRoleEvents() {
+        return logGuildRoleEvents;
+    }
+
+    // Mutator (logGuildRoleEvents).
+    public void setLogGuildRoleEvents(boolean logGuildRoleEvents) {
+        this.logGuildRoleEvents = logGuildRoleEvents;
+    }
+
+    //////////////////
+    // — CHANNELS — //
+    //////////////////
+
+    // Accessor (logChannelId).
     public long getLogChannelId() {
         return logChannelId;
     }
 
-    ///////////////////
-    // CACHE PURGING //
-    ///////////////////
+    // Mutator (logChannelId).
+    public void setLogChannelId(long logChannelId) {
+        this.logChannelId = logChannelId;
+    }
+
+    // Accessor (beaconChannelIds).
+    public List<Long> getBeaconChannelIds() {
+        return beaconChannelIds;
+    }
+
+    // Mutator (beaconChannelIds).
+    public void setBeaconChannelIds(List<Long> beaconChannelIds) {
+        this.beaconChannelIds = beaconChannelIds;
+    }
+
+    // Accessor (voipCategoryIds).
+    public List<Long> getVoipCategoryIds() {
+        return voipCategoryIds;
+    }
+
+    // Mutator (voipCategoryIds).
+    public void setVoipCategoryIds(List<Long> voipCategoryIds) {
+        this.voipCategoryIds = voipCategoryIds;
+    }
+
+    ///////////////////////
+    // — CACHE PURGING — //
+    ///////////////////////
 
     // Accessor (lastAccessed).
     public long getLastAccessed() {

@@ -2,7 +2,6 @@ package bio.chloe.handlers;
 
 import bio.chloe.caches.GuildConfigurationCache;
 import bio.chloe.caches.GuildMessageCache;
-import bio.chloe.caches.objects.GuildConfiguration;
 import bio.chloe.caches.objects.GuildMessage;
 import bio.chloe.managers.DatabaseManager;
 import bio.chloe.utility.Embeds;
@@ -63,6 +62,8 @@ public class GuildEventHandler extends ListenerAdapter {
     @Override
     public void onGuildLeave(@NotNull GuildLeaveEvent guildLeaveEvent) {
         DATABASE_MANAGER.deleteGuildConfiguration(guildLeaveEvent.getGuild().getIdLong());
+
+        GUILD_CONFIGURATION_CACHE.removeGuildConfiguration(guildLeaveEvent.getGuild().getIdLong());
     }
 
     @Override
@@ -132,6 +133,8 @@ public class GuildEventHandler extends ListenerAdapter {
             GuildMessage guildMessage = guildMessageCache.getGuildMessage(messageUpdateEvent.getMessageIdLong());
 
             if (guildMessage != null) {
+                if (guildMessage.getMessageContent().equals(messageUpdateEvent.getMessage().getContentRaw())) return;
+
                 GuildChannel guildChannel = messageUpdateEvent.getGuild().getGuildChannelById(1315265738835230750L /* guildConfiguration.getLogChannelId() */);
 
                 if (guildChannel instanceof MessageChannel messageChannel) {
