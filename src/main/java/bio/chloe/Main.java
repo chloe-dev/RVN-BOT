@@ -1,11 +1,13 @@
 package bio.chloe;
 
 import bio.chloe.configuration.Configuration;
+import bio.chloe.handlers.GuildEventHandler;
 import bio.chloe.handlers.SlashCommandHandler;
 import bio.chloe.managers.DatabaseManager;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.exceptions.InvalidTokenException;
+import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,11 +44,12 @@ public class Main {
         }
 
         try {
-            JDA jdaObject = JDABuilder.createDefault(
-                    configurationInstance.optString("botToken", null)
-            ).build();
+            JDA jdaObject = JDABuilder.createDefault(configurationInstance.optString("botToken", null))
+                    .enableIntents(GatewayIntent.GUILD_MEMBERS,GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_PRESENCES)
+                    .build();
 
             jdaObject.addEventListener(new SlashCommandHandler(jdaObject));
+            jdaObject.addEventListener(new GuildEventHandler());
 
             awaitShutdown(jdaObject);
 

@@ -55,10 +55,22 @@ public class DatabaseManager {
         }
     }
 
-    public void shutdownDatabase() { // TODO: I'm not sure I like the idea of this being accessible via every DatabaseManager instance.
+    public static void shutdownDatabase() {
         if (hikariDataSource != null && !(hikariDataSource.isClosed())) {
             hikariDataSource.close();
         }
+    }
+
+    // Create default configuration for new Guilds.
+
+    public boolean createDefaultGuildConfiguration(long guildId) {
+        return false;
+    }
+
+    // Delete existing Guild configurations.
+
+    public boolean deleteGuildConfiguration(long guildId) {
+        return false;
     }
 
     // Generics for updating database information.
