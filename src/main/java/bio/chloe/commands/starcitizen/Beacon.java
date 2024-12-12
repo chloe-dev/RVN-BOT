@@ -1,6 +1,7 @@
 package bio.chloe.commands.starcitizen;
 
-import bio.chloe.interfaces.ISlashCommandInteraction;
+import bio.chloe.interfaces.interactions.CommandAutoCompleteInteraction;
+import bio.chloe.interfaces.interactions.SlashCommandInteraction;
 import bio.chloe.utility.Embeds;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -23,7 +24,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Locale;
 
-public class Beacon implements ISlashCommandInteraction {
+public class Beacon implements SlashCommandInteraction, CommandAutoCompleteInteraction {
     final long BEACON_CHANNEL_ID = 1311442357664747670L; // guildConfiguration.getBeaconChannelId();
 
     @Override

@@ -2,7 +2,7 @@ package bio.chloe;
 
 import bio.chloe.configuration.Configuration;
 import bio.chloe.handlers.GuildEventHandler;
-import bio.chloe.handlers.SlashCommandHandler;
+import bio.chloe.handlers.InteractionHandler;
 import bio.chloe.managers.DatabaseManager;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -48,7 +48,7 @@ public class Main {
                     .enableIntents(GatewayIntent.GUILD_MEMBERS,GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_PRESENCES)
                     .build();
 
-            jdaObject.addEventListener(new SlashCommandHandler(jdaObject));
+            jdaObject.addEventListener(new InteractionHandler(jdaObject));
             jdaObject.addEventListener(new GuildEventHandler());
 
             awaitShutdown(jdaObject);
