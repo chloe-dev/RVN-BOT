@@ -144,7 +144,7 @@ public class InteractionHandler extends ListenerAdapter {
     }
 
     private void initializeButtonInteractionMap() {
-        // TODO: Implement ButtonInteractions.
+        registerButtonInteraction(new Beacon());
     }
 
     private void registerEntitySelectInteraction(EntitySelectInteraction entitySelectInteraction) {
@@ -205,7 +205,7 @@ public class InteractionHandler extends ListenerAdapter {
 
     @Override
     public void onButtonInteraction(@NotNull ButtonInteractionEvent buttonInteractionEvent) {
-        buttonInteractionMap.get(buttonInteractionEvent.getInteraction().getId()).handleButtonInteraction(buttonInteractionEvent);
+        buttonInteractionMap.get(buttonInteractionEvent.getComponentId()).handleButtonInteraction(buttonInteractionEvent);
     }
 
     @Override
