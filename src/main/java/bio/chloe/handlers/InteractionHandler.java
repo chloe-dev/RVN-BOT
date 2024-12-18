@@ -1,8 +1,7 @@
 package bio.chloe.handlers;
 
 import bio.chloe.commands.starcitizen.Beacon;
-import bio.chloe.commands.utility.Ping;
-import bio.chloe.commands.utility.Uptime;
+import bio.chloe.commands.utility.*;
 import bio.chloe.interfaces.interactions.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
@@ -105,6 +104,7 @@ public class InteractionHandler extends ListenerAdapter {
     }
 
     private void initializeSlashCommandInteractionMap() {
+        registerSlashCommandInteraction(new Color());
         registerSlashCommandInteraction(new Ping());
         registerSlashCommandInteraction(new Uptime());
 
