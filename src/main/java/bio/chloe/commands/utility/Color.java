@@ -29,12 +29,12 @@ public class Color implements SlashCommandInteraction {
         if (HEXADECIMAL_COLOR.matches("^#([A-Fa-f0-9]{6})$")) {
             final java.awt.Color COLOR = java.awt.Color.decode(HEXADECIMAL_COLOR);
 
-            BufferedImage bufferedImage = new BufferedImage(256, 256, BufferedImage.TYPE_INT_RGB);
+            BufferedImage bufferedImage = new BufferedImage(128, 128, BufferedImage.TYPE_INT_RGB);
 
             Graphics2D graphics2D = bufferedImage.createGraphics();
 
             graphics2D.setColor(COLOR);
-            graphics2D.fillRect(0, 0, 256, 256);
+            graphics2D.fillRect(0, 0, 128, 128);
             graphics2D.dispose();
 
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -54,8 +54,8 @@ public class Color implements SlashCommandInteraction {
             String fileName = HEXADECIMAL_COLOR.substring(1).toUpperCase(Locale.ENGLISH) + ".png";
 
             MessageEmbed colorMessageEmbed = new EmbedBuilder()
-                    // NOTE: IntelliJ might suggest replacing '\u2219' with '∙', however, this will appear as 'âˆ™' on Discord.
-                    .setTitle(String.format("%s \u2219 RGB (%d, %d, %d)", HEXADECIMAL_COLOR.toUpperCase(), COLOR.getRed(), COLOR.getGreen(), COLOR.getBlue()))
+                    .setTitle(HEXADECIMAL_COLOR.toUpperCase())
+                    .setDescription(String.format("**RGB (%d, %d, %d)**", COLOR.getRed(), COLOR.getGreen(), COLOR.getBlue()))
                     .setImage("attachment://" + fileName)
                     .setColor(COLOR)
                     .build();
