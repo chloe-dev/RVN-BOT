@@ -1,9 +1,13 @@
 package bio.chloe.handlers;
 
+import bio.chloe.commands.owner.Presence;
+import bio.chloe.commands.owner.Shutdown;
 import bio.chloe.commands.starcitizen.Beacon;
 import bio.chloe.commands.utility.*;
+import bio.chloe.configuration.Configuration;
 import bio.chloe.interfaces.interactions.*;
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.MessageContextInteractionEvent;
@@ -24,7 +28,8 @@ public class InteractionHandler extends ListenerAdapter {
     private static final Logger LOGGER = LoggerFactory.getLogger(InteractionHandler.class);
 
     // Commands.
-    private final Map<String, SlashCommandInteraction> slashCommandInteractionMap = new HashMap<>();
+    private final Map<String, SlashCommandInteraction> globalSlashCommandInteractionMap = new HashMap<>();
+    private final Map<String, SlashCommandInteraction> guildSlashCommandInteractionMap = new HashMap<>();
     private final Map<String, CommandAutoCompleteInteraction> commandAutoCompleteInteractionMap = new HashMap<>();
 
     private final Map<String, MessageContextInteraction> messageContextInteractionMap = new HashMap<>();
@@ -44,7 +49,7 @@ public class InteractionHandler extends ListenerAdapter {
     public InteractionHandler(JDA jdaObject) {
         initializeInteractionMaps();
 
-        synchronizeGlobalCommands(jdaObject);
+        synchronizeSlashCommands(jdaObject);
     }
 
     private void initializeInteractionMaps() {
@@ -67,13 +72,14 @@ public class InteractionHandler extends ListenerAdapter {
         initializeModalInteractionMap();
     }
 
-    private void synchronizeGlobalCommands(JDA jdaObject) {
+    private void synchronizeSlashCommands(JDA jdaObject) {
+        // Synchronize GLOBAL slash commands.
         jdaObject.retrieveCommands().queue(existingSlashCommandList -> {
-            boolean requiresSynchronization = existingSlashCommandList.size() != slashCommandInteractionMap.size();
+            boolean requiresSynchronization = existingSlashCommandList.size() != globalSlashCommandInteractionMap.size();
 
             if (!requiresSynchronization) {
                 requiresSynchronization = existingSlashCommandList.stream()
-                        .noneMatch(existingSlashCommand -> slashCommandInteractionMap.values().stream()
+                        .noneMatch(existingSlashCommand -> globalSlashCommandInteractionMap.values().stream()
                                 .anyMatch(slashCommandInteraction ->
                                         existingSlashCommand.getName().equals(slashCommandInteraction.getSlashCommandData().getName()) &&
                                                 existingSlashCommand.getDescription().equals(slashCommandInteraction.getSlashCommandData().getDescription())
@@ -82,7 +88,7 @@ public class InteractionHandler extends ListenerAdapter {
             }
 
             if (requiresSynchronization) {
-                jdaObject.updateCommands().addCommands(slashCommandInteractionMap.values().stream()
+                jdaObject.updateCommands().addCommands(globalSlashCommandInteractionMap.values().stream()
                         .map(SlashCommandInteraction::getSlashCommandData)
                         .toList()
                 ).queue(
@@ -95,20 +101,80 @@ public class InteractionHandler extends ListenerAdapter {
         }, failure -> {
             // TODO: If retrieveCommands() fails, the bot should probably initiate shutdown.
         });
+
+        // Synchronize GUILD (owner guild) slash commands.
+        Configuration configurationInstance = Configuration.getInstance();
+
+        long ownerGuildId = configurationInstance.optLong("ownerGuildId", 0L);
+
+        if (ownerGuildId == 0L) {
+            LOGGER.error("No owner Guild ID specified in the configuration; failed to synchronize owner Guild slash commands.");
+
+            return;
+        }
+
+        try {
+            Guild ownerGuild = jdaObject.awaitReady().getGuildById(ownerGuildId);
+
+            if (ownerGuild == null) {
+                LOGGER.error("No owner Guild with the ID specified in the configuration was found; failed to synchronize owner Guild slash commands.");
+
+                return;
+            }
+
+            ownerGuild.retrieveCommands().queue(existingSlashCommandList -> {
+                boolean requiresSynchronization = existingSlashCommandList.size() != guildSlashCommandInteractionMap.size();
+
+                if (!requiresSynchronization) {
+                    requiresSynchronization = existingSlashCommandList.stream()
+                            .noneMatch(existingSlashCommand -> guildSlashCommandInteractionMap.values().stream()
+                                    .anyMatch(slashCommandInteraction ->
+                                            existingSlashCommand.getName().equals(slashCommandInteraction.getSlashCommandData().getName()) &&
+                                                    existingSlashCommand.getDescription().equals(slashCommandInteraction.getSlashCommandData().getDescription())
+                                    )
+                            );
+                }
+
+                if (requiresSynchronization) {
+                    ownerGuild.updateCommands().addCommands(guildSlashCommandInteractionMap.values().stream()
+                            .map(SlashCommandInteraction::getSlashCommandData)
+                            .toList()
+                    ).queue(
+                            success -> LOGGER.info("Successfully synchronized GUILD slash commands."), // TODO: Realistically, these are debug statements and should not be present in "Release" candidates.
+                            failure -> LOGGER.error("Failed to synchronize GUILD slash commands.") // TODO: Realistically, these are debug statements and should not be present in "Release" candidates.
+                    );
+                } else {
+                    LOGGER.info("GUILD slash commands did not require synchronization."); // TODO: Realistically, these are debug statements and should not be present in "Release" candidates.
+                }
+            }, failure -> {
+                LOGGER.error("Unable to retrieve owner Guild slash commands; failed to synchronize owner Guild slash commands.");
+            });
+        } catch (InterruptedException interruptedException) {
+            LOGGER.error("InterruptedException thrown whilst attempting to get owner Guild ID.");
+        }
     }
 
     // Commands.
 
-    private void registerSlashCommandInteraction(SlashCommandInteraction slashCommandInteraction) {
+    private void registerSlashCommandInteraction(Map<String, SlashCommandInteraction> slashCommandInteractionMap, SlashCommandInteraction slashCommandInteraction) {
         slashCommandInteractionMap.put(slashCommandInteraction.getSlashCommandData().getName(), slashCommandInteraction);
     }
 
     private void initializeSlashCommandInteractionMap() {
-        registerSlashCommandInteraction(new Color());
-        registerSlashCommandInteraction(new Ping());
-        registerSlashCommandInteraction(new Uptime());
+        // Owner.
 
-        registerSlashCommandInteraction(new Beacon());
+        registerSlashCommandInteraction(guildSlashCommandInteractionMap, new Presence());
+        registerSlashCommandInteraction(guildSlashCommandInteractionMap, new Shutdown());
+
+        // Utility.
+
+        registerSlashCommandInteraction(globalSlashCommandInteractionMap, new Color());
+        registerSlashCommandInteraction(globalSlashCommandInteractionMap, new Ping());
+        registerSlashCommandInteraction(globalSlashCommandInteractionMap, new Uptime());
+
+        // Star Citizen.
+
+        registerSlashCommandInteraction(globalSlashCommandInteractionMap, new Beacon());
     }
 
     private void registerCommandAutoCompleteInteraction(CommandAutoCompleteInteraction commandAutoCompleteInteraction) {
@@ -183,7 +249,13 @@ public class InteractionHandler extends ListenerAdapter {
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent slashCommandInteractionEvent) {
-        slashCommandInteractionMap.get(slashCommandInteractionEvent.getName()).handleSlashCommandInteraction(slashCommandInteractionEvent);
+        LOGGER.info(String.format("%s used command /%s.", slashCommandInteractionEvent.getInteraction().getUser().getName(), slashCommandInteractionEvent.getName()));
+
+        if (globalSlashCommandInteractionMap.containsKey(slashCommandInteractionEvent.getName())) {
+            globalSlashCommandInteractionMap.get(slashCommandInteractionEvent.getName()).handleSlashCommandInteraction(slashCommandInteractionEvent);
+        } else if (guildSlashCommandInteractionMap.containsKey(slashCommandInteractionEvent.getName())) {
+            guildSlashCommandInteractionMap.get(slashCommandInteractionEvent.getName()).handleSlashCommandInteraction(slashCommandInteractionEvent);
+        }
     }
 
     @Override

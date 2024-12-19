@@ -66,6 +66,10 @@ public class Configuration {
         return configurationData.optInt(key, defaultValue);
     }
 
+    public long optLong(String key, long defaultValue) {
+        return configurationData.optLong(key, defaultValue);
+    }
+
     public float optFloat(String key, float defaultValue) {
         return configurationData.optFloat(key, defaultValue);
     }
