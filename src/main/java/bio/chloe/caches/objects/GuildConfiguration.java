@@ -2,198 +2,137 @@ package bio.chloe.caches.objects;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
+
+/**
+ * Provide a thread-safe caching object containing all relevant data related to Guild configurations.
+ */
 
 public class GuildConfiguration {
-    /////////////////////
-    // — INFORMATION — //
-    /////////////////////
-
     private final long GUILD_ID;
 
-    ////////////////
-    // — EVENTS — //
-    ////////////////
+    private final boolean LOG_GUILD_CHANNEL_EVENTS;    // ChannelCreateEvent, ChannelDeleteEvent
+    private final boolean LOG_GUILD_EXPRESSION_EVENTS; // EmojiAddedEvent, EmojiRemovedEvent, GuildStickerAddedEvent, GuildStickerRemovedEvent
+    private final boolean LOG_GUILD_MEMBER_EVENTS;     // GuildMemberJoinEvent, GuildMemberRemoveEvent, GuildMemberRoleAddEvent, GuildMemberRoleRemoveEvent, GuildMemberUpdateNicknameEvent
+    private final boolean LOG_GUILD_MESSAGE_EVENTS;    // MessageDeleteEvent, MessageUpdateEvent, MessageBulkDeleteEvent
+    private final boolean LOG_GUILD_MODERATION_EVENTS; // GuildBanEvent, GuildUnbanEvent, GuildMemberRemoveEvent, GuildVoiceGuildDeafenEvent, GuildVoiceGuildMuteEvent, GuildMemberUpdateTimeOutEvent
+    private final boolean LOG_GUILD_ROLE_EVENTS;       // RoleCreateEvent, RoleDeleteEvent
 
-    private boolean logGuildChannelEvents; // ChannelCreateEvent, ChannelDeleteEvent
-    private boolean logGuildExpressionEvents; // EmojiAddedEvent, EmojiRemovedEvent, GuildStickerAddedEvent, GuildStickerRemovedEvent
-    private boolean logGuildMemberEvents; // GuildMemberJoinEvent, GuildMemberRemoveEvent, GuildMemberRoleAddEvent, GuildMemberRoleRemoveEvent, GuildMemberUpdateNicknameEvent
-    private boolean logGuildMessageEvents; // MessageDeleteEvent, MessageUpdateEvent, MessageBulkDeleteEvent
-    private boolean logGuildModerationEvents; // GuildBanEvent, GuildUnbanEvent, GuildMemberRemoveEvent, GuildVoiceGuildDeafenEvent, GuildVoiceGuildMuteEvent, GuildMemberUpdateTimeOutEvent
-    private boolean logGuildRoleEvents; // RoleCreateEvent, RoleDeleteEvent
+    private final long LOG_CHANNEL_ID;
 
-    //////////////////
-    // — CHANNELS — //
-    //////////////////
+    private final List<Long> BEACON_CHANNEL_IDS;
+    private final List<Long> VOIP_CATEGORY_IDS;
 
-    private long logChannelId; // Channel in which all logXEvents are logged within.
+    private final AtomicLong lastAccessed = new AtomicLong(System.currentTimeMillis());
 
-    private List<Long> beaconChannelIds; // Channels in which beacons may be posted.
+    private GuildConfiguration(Builder guildConfigurationBuilder) {
+        this.GUILD_ID = guildConfigurationBuilder.GUILD_ID;
 
-    private List<Long> voipCategoryIds; // Categories in which VOIP channels may be created.
+        this.LOG_GUILD_CHANNEL_EVENTS = guildConfigurationBuilder.logGuildChannelEvents;
+        this.LOG_GUILD_EXPRESSION_EVENTS = guildConfigurationBuilder.logGuildExpressionEvents;
+        this.LOG_GUILD_MEMBER_EVENTS = guildConfigurationBuilder.logGuildMemberEvents;
+        this.LOG_GUILD_MESSAGE_EVENTS = guildConfigurationBuilder.logGuildMessageEvents;
+        this.LOG_GUILD_MODERATION_EVENTS = guildConfigurationBuilder.logGuildModerationEvents;
+        this.LOG_GUILD_ROLE_EVENTS = guildConfigurationBuilder.logGuildRoleEvents;
 
-    ///////////////////////
-    // — CACHE PURGING — //
-    ///////////////////////
+        this.LOG_CHANNEL_ID = guildConfigurationBuilder.logChannelId;
 
-    private long lastAccessed; // Last time this GuildConfiguration was accessed.
-
-    /////////////////////
-    // — CONSTRUCTOR — //
-    /////////////////////
-
-    public GuildConfiguration(long guildId) {
-        /////////////////////
-        // — INFORMATION — //
-        /////////////////////
-
-        this.GUILD_ID = guildId;
-
-        ////////////////
-        // — EVENTS — //
-        ////////////////
-
-        this.logGuildChannelEvents = false;
-        this.logGuildExpressionEvents = false;
-        this.logGuildMemberEvents = false;
-        this.logGuildMessageEvents = false;
-        this.logGuildModerationEvents = false;
-        this.logGuildRoleEvents = false;
-
-        //////////////////
-        // — CHANNELS — //
-        //////////////////
-
-        this.logChannelId = 0L;
-
-        this.beaconChannelIds = Collections.emptyList();
-
-        this.voipCategoryIds = Collections.emptyList();
-
-        ///////////////////////
-        // — CACHE PURGING — //
-        ///////////////////////
-
-        this.lastAccessed = System.currentTimeMillis();
+        this.BEACON_CHANNEL_IDS = guildConfigurationBuilder.beaconChannelIds;
+        this.VOIP_CATEGORY_IDS = guildConfigurationBuilder.voipCategoryIds;
     }
 
-    /////////////////////
-    // — INFORMATION — //
-    /////////////////////
+    public long getGuildId() { updateLastAccessed(); return this.GUILD_ID; }
 
-    // Accessor (GUILD_ID).
-    public long getGuildId() {
-        return GUILD_ID;
-    }
+    public boolean getLogGuildChannelEvents() { updateLastAccessed(); return this.LOG_GUILD_CHANNEL_EVENTS; }
+    public boolean getLogGuildExpressionEvents() { updateLastAccessed(); return this.LOG_GUILD_EXPRESSION_EVENTS; }
+    public boolean getLogGuildMemberEvents() { updateLastAccessed(); return this.LOG_GUILD_MEMBER_EVENTS; }
+    public boolean getLogGuildMessageEvents() { updateLastAccessed(); return this.LOG_GUILD_MESSAGE_EVENTS; }
+    public boolean getLogGuildModerationEvents() { updateLastAccessed(); return this.LOG_GUILD_MODERATION_EVENTS; }
+    public boolean getLogGuildRoleEvents() { updateLastAccessed(); return this.LOG_GUILD_ROLE_EVENTS; }
 
-    ////////////////
-    // — EVENTS — //
-    ////////////////
+    public long getLogChannelId() { updateLastAccessed(); return this.LOG_CHANNEL_ID; }
 
-    // Accessor (logGuildChannelEvents).
-    public boolean getLogGuildChannelEvents() {
-        return logGuildChannelEvents;
-    }
+    public List<Long> getBeaconChannelIds() { updateLastAccessed(); return this.BEACON_CHANNEL_IDS; }
+    public List<Long> getVoipCategoryIds() { updateLastAccessed(); return this.VOIP_CATEGORY_IDS; }
 
-    // Mutator (logGuildChannelEvents).
-    public void setLogGuildChannelEvents(boolean logGuildChannelEvents) {
-        this.logGuildChannelEvents = logGuildChannelEvents;
-    }
-
-    // Accessor (logGuildExpressionEvents).
-    public boolean getLogGuildExpressionEvents() {
-        return logGuildExpressionEvents;
-    }
-
-    // Mutator (logGuildExpressionEvents).
-    public void setLogGuildExpressionEvents(boolean logGuildExpressionEvents) {
-        this.logGuildExpressionEvents = logGuildExpressionEvents;
-    }
-
-    // Accessor (logGuildMemberEvents).
-    public boolean getLogGuildMemberEvents() {
-        return logGuildMemberEvents;
-    }
-
-    // Mutator (logGuildMemberEvents).
-    public void setLogGuildMemberEvents(boolean logGuildMemberEvents) {
-        this.logGuildMemberEvents = logGuildMemberEvents;
-    }
-
-    // Accessor (logGuildMessageEvents).
-    public boolean getLogGuildMessageEvents() {
-        return logGuildMessageEvents;
-    }
-
-    // Mutator (logGuildChannelEvents).
-    public void setLogGuildMessageEvents(boolean logGuildMessageEvents) {
-        this.logGuildMessageEvents = logGuildMessageEvents;
-    }
-
-    // Accessor (logGuildModerationEvents).
-    public boolean getLogGuildModerationEvents() {
-        return logGuildModerationEvents;
-    }
-
-    // Mutator (logGuildModerationEvents).
-    public void setLogGuildModerationEvents(boolean logGuildModerationEvents) {
-        this.logGuildModerationEvents = logGuildModerationEvents;
-    }
-
-    // Accessor (logGuildRoleEvents).
-    public boolean getLogGuildRoleEvents() {
-        return logGuildRoleEvents;
-    }
-
-    // Mutator (logGuildRoleEvents).
-    public void setLogGuildRoleEvents(boolean logGuildRoleEvents) {
-        this.logGuildRoleEvents = logGuildRoleEvents;
-    }
-
-    //////////////////
-    // — CHANNELS — //
-    //////////////////
-
-    // Accessor (logChannelId).
-    public long getLogChannelId() {
-        return logChannelId;
-    }
-
-    // Mutator (logChannelId).
-    public void setLogChannelId(long logChannelId) {
-        this.logChannelId = logChannelId;
-    }
-
-    // Accessor (beaconChannelIds).
-    public List<Long> getBeaconChannelIds() {
-        return beaconChannelIds;
-    }
-
-    // Mutator (beaconChannelIds).
-    public void setBeaconChannelIds(List<Long> beaconChannelIds) {
-        this.beaconChannelIds = beaconChannelIds;
-    }
-
-    // Accessor (voipCategoryIds).
-    public List<Long> getVoipCategoryIds() {
-        return voipCategoryIds;
-    }
-
-    // Mutator (voipCategoryIds).
-    public void setVoipCategoryIds(List<Long> voipCategoryIds) {
-        this.voipCategoryIds = voipCategoryIds;
-    }
-
-    ///////////////////////
-    // — CACHE PURGING — //
-    ///////////////////////
-
-    // Accessor (lastAccessed).
     public long getLastAccessed() {
-        return lastAccessed;
+        return lastAccessed.get();
     }
 
-    // Mutator (lastAccessed).
-    public void updateLastAccessed() {
-        lastAccessed = System.currentTimeMillis();
+    private void updateLastAccessed() {
+        lastAccessed.set(System.currentTimeMillis());
+    }
+
+    public static class Builder {
+        private final long GUILD_ID;
+
+        private boolean logGuildChannelEvents = false;
+        private boolean logGuildExpressionEvents = false;
+        private boolean logGuildMemberEvents = false;
+        private boolean logGuildMessageEvents = false;
+        private boolean logGuildModerationEvents = false;
+        private boolean logGuildRoleEvents = false;
+
+        private long logChannelId = 0L;
+
+        private List<Long> beaconChannelIds = Collections.emptyList();
+        private List<Long> voipCategoryIds = Collections.emptyList();
+
+        public Builder(long guildId) {
+            this.GUILD_ID = guildId;
+        }
+
+        public static Builder from(GuildConfiguration originalGuildConfiguration) {
+            return new Builder(originalGuildConfiguration.GUILD_ID)
+                    .setLogGuildChannelEvents(originalGuildConfiguration.LOG_GUILD_CHANNEL_EVENTS)
+                    .setLogGuildExpressionEvents(originalGuildConfiguration.LOG_GUILD_EXPRESSION_EVENTS)
+                    .setLogGuildMemberEvents(originalGuildConfiguration.LOG_GUILD_MEMBER_EVENTS)
+                    .setLogGuildMessageEvents(originalGuildConfiguration.LOG_GUILD_MESSAGE_EVENTS)
+                    .setLogGuildModerationEvents(originalGuildConfiguration.LOG_GUILD_MODERATION_EVENTS)
+                    .setLogGuildRoleEvents(originalGuildConfiguration.LOG_GUILD_ROLE_EVENTS)
+                    .setLogChannelId(originalGuildConfiguration.LOG_CHANNEL_ID)
+                    .setBeaconChannelIds(originalGuildConfiguration.BEACON_CHANNEL_IDS)
+                    .setVoipCategoryIds(originalGuildConfiguration.VOIP_CATEGORY_IDS);
+        }
+
+        public Builder setLogGuildChannelEvents(boolean logGuildChannelEvents) {
+            this.logGuildChannelEvents = logGuildChannelEvents; return this;
+        }
+
+        public Builder setLogGuildExpressionEvents(boolean logGuildExpressionEvents) {
+            this.logGuildExpressionEvents = logGuildExpressionEvents; return this;
+        }
+
+        public Builder setLogGuildMemberEvents(boolean logGuildMemberEvents) {
+            this.logGuildMemberEvents = logGuildMemberEvents; return this;
+        }
+
+        public Builder setLogGuildMessageEvents(boolean logGuildMessageEvents) {
+            this.logGuildMessageEvents = logGuildMessageEvents; return this;
+        }
+
+        public Builder setLogGuildModerationEvents(boolean logGuildModerationEvents) {
+            this.logGuildModerationEvents = logGuildModerationEvents; return this;
+        }
+
+        public Builder setLogGuildRoleEvents(boolean logGuildRoleEvents) {
+            this.logGuildRoleEvents = logGuildRoleEvents; return this;
+        }
+
+        public Builder setLogChannelId(long logChannelId) {
+            this.logChannelId = logChannelId; return this;
+        }
+
+        public Builder setBeaconChannelIds(List<Long> beaconChannelIds) {
+            this.beaconChannelIds = beaconChannelIds; return this;
+        }
+
+        public Builder setVoipCategoryIds(List<Long> voipCategoryIds) {
+            this.voipCategoryIds = voipCategoryIds; return this;
+        }
+
+        public GuildConfiguration build() {
+            return new GuildConfiguration(this);
+        }
     }
 }

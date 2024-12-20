@@ -53,7 +53,7 @@ public class GuildMessageCache {
 
     private void purgeCache() {
         guildMessageMap.entrySet().removeIf(guildConfiguration ->
-                guildConfiguration.getValue().getCreationTime() < PURGE_PERIOD
+                guildConfiguration.getValue().getLastAccessed() < PURGE_PERIOD
         );
     }
 }

@@ -78,11 +78,11 @@ public class Main {
     }
 
     private static void shutdown(JDA jdaObject) {
-        LOGGER.info("Initializing SQLite graceful shutdown procedures.");
+        LOGGER.info("Initiating SQLite graceful shutdown procedures.");
 
-        DatabaseManager.getInstance().shutdownDatabase();
+        DatabaseManager.closeDatabaseManager();
 
-        LOGGER.info("Initializing JDA graceful shutdown procedures.");
+        LOGGER.info("Initiating JDA graceful shutdown procedures.");
 
         jdaObject.shutdown();
 

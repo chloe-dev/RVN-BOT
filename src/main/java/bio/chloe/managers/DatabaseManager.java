@@ -49,28 +49,22 @@ public class DatabaseManager {
         return instance;
     }
 
-    public static void initializeDatabaseManager(String dbUrl) {
+    public static boolean initializeDatabaseManager(String dbUrl) {
         if (instance == null) {
             instance = new DatabaseManager(dbUrl);
         }
+
+        // Test the database connection (function).
+
+        // Instantiate the database schema (by use of IF NOT EXISTS statements) (function).
+
+        return true;
     }
 
-    public static void shutdownDatabase() {
+    public static void closeDatabaseManager() {
         if (hikariDataSource != null && !(hikariDataSource.isClosed())) {
             hikariDataSource.close();
         }
-    }
-
-    // Create default configuration for new Guilds.
-
-    public boolean createDefaultGuildConfiguration(long guildId) {
-        return false;
-    }
-
-    // Delete existing Guild configurations.
-
-    public boolean deleteGuildConfiguration(long guildId) {
-        return false;
     }
 
     // Generics for updating database information.

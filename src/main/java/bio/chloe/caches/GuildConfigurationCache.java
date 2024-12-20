@@ -2,6 +2,7 @@ package bio.chloe.caches;
 
 import bio.chloe.caches.objects.GuildConfiguration;
 import bio.chloe.managers.DatabaseManager;
+import bio.chloe.managers.GuildConfigurationManager;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -10,7 +11,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class GuildConfigurationCache {
-    private final long PURGE_PERIOD = System.currentTimeMillis() - TimeUnit.HOURS.toMillis(24);
+    private final long PURGE_PERIOD = System.currentTimeMillis() - TimeUnit.HOURS.toMillis(1);
 
     private final Map<Long, GuildConfiguration> guildConfigurationMap;
 
@@ -58,27 +59,19 @@ public class GuildConfigurationCache {
 
     public GuildConfiguration getGuildConfiguration(long guildId) {
         if (guildConfigurationMap.containsKey(guildId)) {
-            GuildConfiguration guildConfiguration = guildConfigurationMap.get(guildId);
+            return guildConfigurationMap.get(guildId);
+        } else {
+            GuildConfiguration guildConfiguration = GuildConfigurationManager.getGuildConfiguration(guildId);
 
-            guildConfiguration.updateLastAccessed();
+            if (guildConfiguration == null) {
+                if (!GuildConfigurationManager.createDefaultGuildConfiguration(guildId)) {
+                    return null;
+                } else {
+                    guildConfiguration = GuildConfigurationManager.getGuildConfiguration(guildId);
+                }
+            }
 
             return guildConfiguration;
-        } else {
-            // Get the configuration from the database (if it's fallen out of cache).
-
-            // If there's nothing in the database, create the default configuration.
-            DatabaseManager databaseManager = DatabaseManager.getInstance();
-
-            databaseManager.createDefaultGuildConfiguration(guildId);
-
-            // Get the configuration from the database.
-
-            // Return the guild configuration.
-
-            return null; // TODO: Get the configuration from the database (if it's fallen out of cache).
-                                     // TODO: If there's nothing in the database, create the default configuration
-                                     // TODO: for that specific guild, store it in the database, cache it, and
-                                     // TODO: return the cached GuildConfiguration from the guildConfigurationMap.
         }
     }
 
@@ -97,7 +90,7 @@ public class GuildConfigurationCache {
     private void initializeScheduledExecutorService() {
         final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
-        scheduledExecutorService.scheduleAtFixedRate(this::purgeCache, 12, 12, TimeUnit.HOURS);
+        scheduledExecutorService.scheduleAtFixedRate(this::purgeCache, 15, 15, TimeUnit.MINUTES);
     }
 
     private void purgeCache() {
