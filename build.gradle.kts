@@ -30,7 +30,7 @@ dependencies {
     implementation("org.json:json:20240303") // JSON 20240303 (03 March 2024).
 
     // Logback Classic: https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
-    implementation("ch.qos.logback:logback-classic:1.5.12") // Logback Classic 1.5.12 (25 October 2024).
+    implementation("ch.qos.logback:logback-classic:1.5.13") // Logback Classic 1.5.13 (18 December 2024).
 
     // SLF4J: https://mvnrepository.com/artifact/org.slf4j/slf4j-api
     implementation("org.slf4j:slf4j-api:2.0.16") // SLF4J 2.0.16 (10 August 2024).
